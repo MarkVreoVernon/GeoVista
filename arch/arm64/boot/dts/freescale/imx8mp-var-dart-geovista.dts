@@ -1,0 +1,374 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2019 NXP
+ * Copyright 2020-2021 Variscite Ltd.
+ */
+
+#include "imx8mp-var-dart.dtsi"
+
+/ {
+	model = "Variscite DART-MX8M-PLUS on GeoVista Carrier";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+		
+gpio-leds {
+	compatible = "gpio-leds";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_gpio_leds>;
+	status = "okay";
+	
+	debug-LED {
+		label = "debug-LED";
+		gpios = <&gpio4 5 GPIO_ACTIVE_HIGH>;
+		default-state = "on";
+	};
+};
+	
+};
+
+/* Console */
+&uart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1>;
+	status = "okay";
+};
+
+/* Motor Control Brd Comms */
+&uart2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart2>;
+	status = "okay";
+};
+
+/* RS485 Video Output Comms */
+&uart3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart3>;
+	status = "okay";
+};
+
+
+/* HDMI */
+&lcdif3 {
+	status = "okay";
+	thres-low  = <1 2>;             /* (FIFO * 1 / 2) */
+	thres-high = <3 4>;             /* (FIFO * 3 / 4) */
+};
+
+&irqsteer_hdmi {
+	status = "okay";
+};
+
+&hdmi_blk_ctrl {
+	status = "okay";
+};
+
+&hdmi_pavi {
+	status = "okay";
+};
+
+&hdmi {
+	status = "okay";
+};
+
+&hdmiphy {
+	status = "okay";
+};
+
+
+/* Ethernet */
+/*
+&eqos {
+	mdio {
+		ethphy1: ethernet-phy@1 {
+			compatible = "ethernet-phy-ieee802.3-c22";
+			reg = <1>;
+			at803x,eee-disabled;
+			eee-broken-1000t;
+			reset-assert-us = <10000>;
+			reset-deassert-us = <20000>;
+			vddio-supply = <&vddio1>;
+
+			vddio1: vddio-regulator {
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+			};
+		};
+	};
+};
+*/
+
+/*
+&fec {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fec>;
+	phy-mode = "rgmii";
+	phy-handle = <&ethphy1>;
+	status = "okay";
+};
+*/
+
+
+/* USB */
+
+&usb3_phy0 {
+	fsl,phy-tx-vref-tune = <0xe>;
+	fsl,phy-tx-preemp-amp-tune = <3>;
+	fsl,phy-tx-vboost-level = <5>;
+	fsl,phy-comp-dis-tune = <7>;
+	fsl,pcs-tx-deemph-3p5db = <0x21>;
+	fsl,phy-pcs-tx-swing-full = <0x7f>;
+	status = "okay";
+};
+
+&usb3_0 {
+	status = "okay";
+};
+
+&usb_dwc3_0 {
+	dr_mode = "host";
+	hnp-disable;
+	cd ..
+	srp-disable;
+	adp-disable;
+	usb-role-switch;
+	role-switch-default-mode = "host";
+	snps,dis-u1-entry-quirk;
+	snps,dis-u2-entry-quirk;
+	status = "okay";
+
+};
+
+/* MIPI Camera
+&i2c2 {
+	clock-frequency = <400000>;
+	pinctrl-names = "default", "gpio";
+	pinctrl-0 = <&pinctrl_i2c2>;
+	pinctrl-1 = <&pinctrl_i2c2_gpio>;
+	scl-gpios = <&gpio5 16 GPIO_ACTIVE_HIGH>;
+	sda-gpios = <&gpio5 17 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+
+	ov5640_mipi0: ov5640_mipi@3c {
+		compatible = "ovti,ov5640";
+		reg = <0x3c>;
+		clocks = <&clk IMX8MP_CLK_IPP_DO_CLKO2>;
+		clock-names = "xclk";
+/* Disabled CLKO2, since DART-MX8MP camera expansion board uses
+ * its own oscillator. Enable CLK02 if your desing requres it
+*/ 
+#if 0
+		assigned-clocks = <&clk IMX8MP_CLK_IPP_DO_CLKO2>;
+		assigned-clock-parents = <&clk IMX8MP_CLK_24M>;
+#endif
+		assigned-clock-rates = <24000000>;
+		csi_id = <0>;
+		// powerdown-gpios = <&pca6408_1 3 GPIO_ACTIVE_HIGH>; 
+		// reset-gpios = <&gpio1 14 GPIO_ACTIVE_LOW>;
+		mclk = <24000000>;
+		mclk_source = <0>;
+		mipi_csi;
+		status = "okay";
+
+		port {
+			ov5640_mipi_0_ep: endpoint {
+				remote-endpoint = <&mipi_csi0_ep>;
+				data-lanes = <1 2>;	
+				clock-lanes = <0>;
+			};
+		};
+	};
+};
+
+&i2c4 {
+	clock-frequency = <400000>;
+	pinctrl-names = "default", "gpio";
+	pinctrl-0 = <&pinctrl_i2c4>;
+	pinctrl-1 = <&pinctrl_i2c4_gpio>;
+	scl-gpios = <&gpio5 20 GPIO_ACTIVE_HIGH>;
+	sda-gpios = <&gpio5 21 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+
+	ov5640_mipi1: ov5640_mipi@3c {
+		compatible = "ovti,ov5640";
+		reg = <0x3c>;
+		clocks = <&clk IMX8MP_CLK_IPP_DO_CLKO2>;
+		clock-names = "xclk";
+/* Disabled CLKO2, since DART-MX8MP camera expansion board uses
+ * its own oscillator. Enable CLK02 if your desing requres it
+ */
+#if 0
+		assigned-clocks = <&clk IMX8MP_CLK_IPP_DO_CLKO2>;
+		assigned-clock-parents = <&clk IMX8MP_CLK_24M>;
+#endif
+		assigned-clock-rates = <24000000>;
+		csi_id = <1>;
+		// powerdown-gpios = <&pca6408_1 2 GPIO_ACTIVE_HIGH>; 
+		// reset-gpios = <&gpio1 12 GPIO_ACTIVE_LOW>;
+		mclk = <24000000>;
+		mclk_source = <0>;
+		mipi_csi;
+		status = "okay";
+
+		port {
+			ov5640_mipi_1_ep: endpoint {
+				remote-endpoint = <&mipi_csi1_ep>;
+				data-lanes = <1 2>;
+				clock-lanes = <0>;
+			};
+		};
+	};
+};
+
+&isp0_reserved {
+	status = "disabled";
+};
+
+&mipi_csi_0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	port@0 {
+		reg = <0>;
+		mipi_csi0_ep: endpoint {
+			remote-endpoint = <&ov5640_mipi_0_ep>;
+			data-lanes = <2>;
+			csis-hs-settle = <13>;
+			csis-clk-settle = <2>;
+			csis-wclk;
+		};
+	};
+};
+
+&mipi_csi_1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	port@1 {
+		reg = <1>;
+		mipi_csi1_ep: endpoint {
+			remote-endpoint = <&ov5640_mipi_1_ep>;
+			data-lanes = <2>;
+			csis-hs-settle = <13>;
+			csis-clk-settle = <2>;
+			csis-wclk;
+		};
+	};
+};
+
+&cameradev {
+	status = "okay";
+};
+
+&isi_0 {
+	status = "okay";
+
+	cap_device {
+		status = "okay";
+	};
+
+	m2m_device {
+		status = "okay";
+	};
+};
+
+&isi_1 {
+	status = "okay";
+
+	cap_device {
+		status = "okay";
+	};
+};
+
+&iomuxc {
+
+	/* HDMI */
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+			MX8MP_IOMUXC_HDMI_DDC_SCL__HDMIMIX_HDMI_SCL			0x400001c2
+			MX8MP_IOMUXC_HDMI_DDC_SDA__HDMIMIX_HDMI_SDA			0x400001c2
+			MX8MP_IOMUXC_HDMI_HPD__HDMIMIX_HDMI_HPD			0x40000010
+			MX8MP_IOMUXC_HDMI_CEC__HDMIMIX_HDMI_CEC			0x40000010
+		>;
+	};
+	
+
+	
+	/* Ethernet */
+/*	pinctrl_fec: fecgrp {
+		fsl,pins = <
+			MX8MP_IOMUXC_SAI1_RXD4__ENET1_RGMII_RD0				0x90
+			MX8MP_IOMUXC_SAI1_RXD5__ENET1_RGMII_RD1				0x90
+			MX8MP_IOMUXC_SAI1_RXD6__ENET1_RGMII_RD2				0x90
+			MX8MP_IOMUXC_SAI1_RXD7__ENET1_RGMII_RD3				0x90
+			MX8MP_IOMUXC_SAI1_TXC__ENET1_RGMII_RXC				0x90
+			MX8MP_IOMUXC_SAI1_TXFS__ENET1_RGMII_RX_CTL				0x90
+			MX8MP_IOMUXC_SAI1_TXD0__ENET1_RGMII_TD0				0x00
+			MX8MP_IOMUXC_SAI1_TXD1__ENET1_RGMII_TD1				0x00
+			MX8MP_IOMUXC_SAI1_TXD2__ENET1_RGMII_TD2				0x00
+			MX8MP_IOMUXC_SAI1_TXD3__ENET1_RGMII_TD3				0x00
+			MX8MP_IOMUXC_SAI1_TXD4__ENET1_RGMII_TX_CTL				0x00
+			MX8MP_IOMUXC_SAI1_TXD5__ENET1_RGMII_TXC				0x00
+		>;
+	};
+*/
+
+	pinctrl_i2c2: i2c2grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_I2C2_SCL__I2C2_SCL					0x400001c2
+			MX8MP_IOMUXC_I2C2_SDA__I2C2_SDA					0x400001c2
+		>;
+	};
+
+	pinctrl_i2c4: i2c4grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_I2C4_SCL__I2C4_SCL					0x400001c2
+			MX8MP_IOMUXC_I2C4_SDA__I2C4_SDA					0x400001c2
+		>;
+	};
+
+	
+	/* Console UART */
+	pinctrl_uart1: uart1grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_UART1_RXD__UART1_DCE_RX				0x40
+			MX8MP_IOMUXC_UART1_TXD__UART1_DCE_TX				0x40
+		>;
+	};
+
+	/* Motor Control Brd Comms */
+	pinctrl_uart2: uart2grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_UART2_RXD__UART2_DCE_RX				0x40
+			MX8MP_IOMUXC_UART2_TXD__UART2_DCE_TX				0x40
+		>;
+	};
+
+	/* RS485 Video Output Comms */
+	pinctrl_uart3: uart3grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_UART3_RXD__UART3_DCE_RX				0x40
+			MX8MP_IOMUXC_UART3_TXD__UART3_DCE_TX				0x40
+		>;
+	};
+
+	/* Debug LED */	
+	pinctrl_gpio_leds: ledgrp {
+		fsl,pins = <
+			MX8MP_IOMUXC_SAI1_RXD3__GPIO4_IO05				0xc6
+		>;	
+	};
+};
+
+
+
+
+
+
